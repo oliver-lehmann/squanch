@@ -9,20 +9,19 @@ player.on('pause', function() {
 });
 
 // Add multiple audio tracks with the audioTracks API
-var player = videojs('my-video');
 
 var track1 = new videojs.AudioTrack({
   id: 'track1',
   kind: 'alternative',
-  label: 'English',
+  label: 'Speaker 1',
   language: 'en'
 });
 
 var track2 = new videojs.AudioTrack({
   id: 'track2',
   kind: 'alternative',
-  label: 'Spanish',
-  language: 'es'
+  label: 'Speaker 2',
+  language: 'en'
 });
 
 player.audioTracks().addTrack(track1);
