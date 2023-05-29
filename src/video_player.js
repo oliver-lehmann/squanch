@@ -1,4 +1,19 @@
-var player = videojs('BAR-RMA');
+var player = videojs('bar-rma-video');
+
+document.getElementById('commentary-1').addEventListener('click', function() {
+  event.preventDefault();
+  player.src({ type: 'audio/mp3', src: 'https://example.com/audio1.mp3' });
+  player.play();
+});
+/*
+document.getElementById('commentary-2').addEventListener('click', function() {
+  player.src({ type: 'audio/mp3', src: 'https://example.com/audio2.mp3' });
+});
+
+document.getElementById('commentary-3').addEventListener('click', function() {
+  player.src({ type: 'audio/mp3', src: 'https://example.com/audio3.mp3' });
+});*/
+
 
 player.on('play', function() {
   console.log('the video is playing');
