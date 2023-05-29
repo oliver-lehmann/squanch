@@ -2,7 +2,7 @@ var player = videojs('bar-rma-video');
 
 document.getElementById('commentary-1').addEventListener('click', function() {
   event.preventDefault();
-  player.src({ type: 'audio/mp3', src: 'https://example.com/audio1.mp3' });
+  player.src({ type: 'audio/mp3', src: 'https://squanch-bucket.s3.eu-west-1.amazonaws.com/audios/example.mp3' });
   player.play();
 });
 /*
