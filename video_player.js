@@ -9,7 +9,7 @@ player.on('pause', function() {
 });
 
 // Add multiple audio tracks with the audioTracks API
-
+/*
 var track1 = new videojs.AudioTrack({
   id: 'track1',
   kind: 'alternative',
@@ -30,4 +30,4 @@ player.audioTracks().addTrack(track2);
 // to switch between audio tracks, we use the enabled property
 track1.enabled = true; // enable track1
 track2.enabled = false; // disable track2
-
+*/
