@@ -1,20 +1,45 @@
+// Get the Component base class from Video.js
+var Component = videojs.getComponent('Component');
+
+// Create a new component for the audio menu
+class AudioMenu extends Component {
+
+  // The constructor of a component receives two arguments: the
+  // player it will be associated with and an object of options.
+  constructor(player, options={}) {
+    super(player, options);
+    this.addClass('vjs-audio-menu');
+  }
+
+  handleClick() {
+    // Handle the addition of the second audio track here
+    // You can use player.src() to add a new audio track
+    console.log("Audio button was clicked.")
+  }
+
+  createEl() {
+    var el = videojs.dom.createEl('button', {
+      innerHTML: 'Add 2nd Audio',
+      className: 'vjs-menu-button vjs-menu-button-popup vjs-control vjs-button'
+    });
+
+    el.addEventListener('click', () => this.handleClick());
+
+    return el;
+  }
+}
+
+// Register the new component
+videojs.registerComponent('AudioMenu', AudioMenu);
+
+// Create the player
 var player = videojs('bar-rma-video');
 
-document.getElementById('commentary-1').addEventListener('click', function() {
-  event.preventDefault();
-  player.src({ type: 'audio/mp3', src: 'https://squanch-bucket.s3.eu-west-1.amazonaws.com/audios/example.mp3' });
-  player.play();
-});
-/*
-document.getElementById('commentary-2').addEventListener('click', function() {
-  player.src({ type: 'audio/mp3', src: 'https://example.com/audio2.mp3' });
-});
-
-document.getElementById('commentary-3').addEventListener('click', function() {
-  player.src({ type: 'audio/mp3', src: 'https://example.com/audio3.mp3' });
-});*/
+// Add the new component to the control bar
+player.getChild('controlBar').addChild('AudioMenu', {});
 
 
+// Log some information to console to see if the player is working
 player.on('play', function() {
   console.log('the video is playing');
 });
