@@ -1,7 +1,11 @@
 // Get the Component base class from Video.js
 var Component = videojs.getComponent('Component');
 
-var speaker_menu = document.getElementById("speaker-menu");
+// Select the audio button from the control bar
+var button = document.querySelector(':scope button.vjs-audio-button')
+if (button) {
+  button.classList.remove('vjs-hidden');
+}
 
 // Create a new component for the audio menu
 class AudioMenu extends Component {
@@ -18,7 +22,8 @@ class AudioMenu extends Component {
     // Handle the addition of the second audio track here
     // You can use player.src() to add a new audio track
     console.log("Audio button was clicked.")
-    speaker_menu.style.display = "block";
+    //speaker_menu.style.display = "block";
+    this.menu.style.display = "block";
     this.menuOpen = !this.menuOpen;
     this.updateMenu();
   }
@@ -81,11 +86,31 @@ class AudioMenu extends Component {
 // Register the new component
 videojs.registerComponent('AudioMenu', AudioMenu);
 
+// Define options for the player
+const options = {
+  language: "en",
+  preload: "auto",
+  fluid: true,
+  html5: {
+    hls: {
+      overrideNative: true,
+      limitRenditionByPlayerDimensions: true,
+      useDevicePixelRatio: true
+    },
+    nativeAudioTracks: false,
+    nativeVideoTracks: false,
+  },
+  controlBar: {
+    pictureInPictureToggle: false,
+    fullscreenToggle: false
+  }
+};
+
 // Create the player
-var player = videojs('bar-rma-video');
+var player = videojs('bar-rma-video', options);
 
 // Add the new component to the control bar
-player.getChild('controlBar').addChild('AudioMenu', {});
+//player.getChild('controlBar').addChild('AudioMenu', {});
 
 
 // Log some information to console to see if the player is working
