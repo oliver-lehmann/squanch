@@ -1,105 +1,8 @@
-// Get the Component base class from Video.js
-var Component = videojs.getComponent('Component');
-
-// Select the audio button from the control bar
-var button = document.querySelector(':scope button.vjs-audio-button')
-if (button) {
-  button.classList.remove('vjs-hidden');
-}
-
-// Create a new component for the audio menu
-class AudioMenu extends Component {
-
-  // The constructor of a component receives two arguments: the
-  // player it will be associated with and an object of options.
-  constructor(player, options={}) {
-    super(player, options);
-    this.addClass('vjs-audio-menu');
-    this.menuOpen = false;
-  }
-
-  handleClick() {
-    // Handle the addition of the second audio track here
-    // You can use player.src() to add a new audio track
-    console.log("Audio button was clicked.")
-    //speaker_menu.style.display = "block";
-    this.menu.style.display = "block";
-    this.menuOpen = !this.menuOpen;
-    this.updateMenu();
-  }
-
-  // This method creates the DOM element that will contain the component.
-  createEl() {
-    // menu button
-    var el = videojs.dom.createEl('button', {
-      className: 'vjs-menu-button vjs-menu-button-popup vjs-control vjs-button'
-    });
-
-    // image of menu button
-    var icon = videojs.dom.createEl('i', {
-      className: 'fa-solid fa-comment-dots fa-flip-horizontal',
-      style: 'color: #7cf895;'
-    });
-    el.appendChild(icon);
-
-    // menu
-    this.menu = videojs.dom.createEl('div', {
-      className: 'vjs-menu',
-      style: 'display: none;'
-    });
-
-    // menu content
-    this.button1 = videojs.dom.createEl('button', {
-      innerHTML: 'Speaker 1',
-      className: 'vjs-menu-item',
-      onclick: () => this.setAudio('https://squanch-bucket.s3.eu-west-1.amazonaws.com/audios/example.mp3')
-    });
-
-    this.button2 = videojs.dom.createEl('button', {
-      innerHTML: 'Speaker 2',
-      className: 'vjs-menu-item',
-      onclick: () => this.setAudio('https://squanch-bucket.s3.eu-west-1.amazonaws.com/audios/example-2.wav')
-    });
-
-    this.menu.appendChild(this.button1);
-    this.menu.appendChild(this.button2);
-    el.appendChild(this.menu);
-    el.addEventListener('click', () => this.handleClick());
-
-    return el;
-  }
-
-  updateMenu() {
-    this.menu.style.display = this.menuOpen ? 'block' : 'none';
-  }
-
-  setAudio(audioFile) {
-    var currentTime = this.player_.currentTime();
-    this.player_.src([
-      { type: "video/mp4", src: "https://squanch-bucket.s3.eu-west-1.amazonaws.com/Barcelona-RealMadrid.mp4" },
-      { type: "audio/mp3", src: audioFile}
-    ]);
-    this.player_.currentTime(currentTime);
-  }
-}
-
-// Register the new component
-videojs.registerComponent('AudioMenu', AudioMenu);
-
-// Define options for the player
+// Define options for the Video.js player
 const options = {
   language: "en",
   preload: "auto",
   fluid: true,
-  html5: {
-    hls: {
-      overrideNative: true,
-      limitRenditionByPlayerDimensions: true,
-      useDevicePixelRatio: true
-    },
-    nativeAudioTracks: false,
-    nativeVideoTracks: false,
-  },
   controlBar: {
     pictureInPictureToggle: false,
     fullscreenToggle: false
@@ -107,41 +10,74 @@ const options = {
 };
 
 // Create the player
-var player = videojs('bar-rma-video', options);
+let player = videojs('bar-rma-video', options);
 
-// Add the new component to the control bar
-//player.getChild('controlBar').addChild('AudioMenu', {});
+// Create the audio elements
+let audio1 = new Audio('https://squanch-bucket.s3.eu-west-1.amazonaws.com/audios/Fabi-1.m4a')
+let audio2 = new Audio('https://squanch-bucket.s3.eu-west-1.amazonaws.com/audios/example-2.wav')
 
+// Function to sync audio with video
+function syncAudio(audio) {
+  if (player.paused()) {  
+    audio.pause();
+  } else {
+    audio.play();
+    audio.currentTime = player.currentTime();
+  }
+}
 
-// Log some information to console to see if the player is working
+// Event listeners for the dropdown menu
+let menuItems = document.querySelectorAll('.speaker-item');
+
+menuItems.forEach(function(item) {
+  item.addEventListener('click', function(e) {
+    e.preventDefault();
+
+    // Check if the clicked menu item is already active
+    if (this.classList.contains('active')) {
+      // If it is, remove the .active class and stop the audio
+      this.classList.remove('active');
+      if (this.id === 'speaker-1') {
+        audio1.pause();
+      } else if (this.id === 'speaker-2') {
+        audio2.pause();
+      }
+    } else {
+      // Remove .active class from all menu items
+      menuItems.forEach(function(otherItem) {
+        otherItem.classList.remove('active');
+      });
+
+      // Add .active class to the selected menu item
+      this.classList.add('active');
+
+      // Pause all audios first
+      audio1.pause();
+      audio2.pause();
+    }
+
+    // Play the selected audio and sync with video
+    if (this.id === 'speaker-1') {
+      syncAudio(audio1);
+    } else if (this.id === 'speaker-2') {
+      syncAudio(audio2);
+    }
+  });
+});
+
+// Event listener for video play and pause
 player.on('play', function() {
   console.log('the video is playing');
+  let selectedSpeaker = document.querySelector('.speaker-item.active').id;
+  if (selectedSpeaker === 'speaker-1') {
+    syncAudio(audio1);
+  } else if (selectedSpeaker === 'speaker-2') {
+    syncAudio(audio2);
+  }
 });
 
 player.on('pause', function() {
   console.log('the video is paused');
+  audio1.pause();
+  audio2.pause();
 });
-
-// Add multiple audio tracks with the audioTracks API
-/*
-var track1 = new videojs.AudioTrack({
-  id: 'track1',
-  kind: 'alternative',
-  label: 'Speaker 1',
-  language: 'en'
-});
-
-var track2 = new videojs.AudioTrack({
-  id: 'track2',
-  kind: 'alternative',
-  label: 'Speaker 2',
-  language: 'en'
-});
-
-player.audioTracks().addTrack(track1);
-player.audioTracks().addTrack(track2);
-
-// to switch between audio tracks, we use the enabled property
-track1.enabled = true; // enable track1
-track2.enabled = false; // disable track2
-*/
