@@ -1,3 +1,75 @@
+function isIOS() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
+
+// Function to sync audio with video
+function syncAudio(audio) {
+  if (player.paused()) {  
+    audio.pause();
+  } else {
+    if (audio.paused) {
+      audio.play();
+    }
+    audio.currentTime = player.currentTime();
+  }
+}
+
+// Function to start syncing audio with video
+function startSyncingAudio() {
+  syncInterval = setInterval(function() {
+    let selectedSpeaker = document.querySelector('.speaker-item.active');
+    let active_speaker;
+    if (selectedSpeaker) {
+      if (selectedSpeaker.id === 'speaker-1') {
+        active_speaker = speaker1;
+      } else if (selectedSpeaker.id === 'speaker-2') {
+        active_speaker = speaker2;
+      }
+
+      const audio_video_diff_threshold = 0.5;
+      if (active_speaker.currentTime < player.currentTime() - audio_video_diff_threshold || active_speaker.currentTime > player.currentTime() + audio_video_diff_threshold) {
+        console.log('active speaker time: ', active_speaker.currentTime, 'video time: ', player.currentTime());
+        syncAudio(active_speaker);
+      }
+    }
+  }, 1000); // 2000 milliseconds = 2 seconds
+}
+
+// Function to stop syncing audio with video
+function stopSyncingAudio() {
+  clearInterval(syncInterval);
+}
+
+function startPlayingAudio(iosDevice) {
+  console.log("startPlayingAudio");
+  let selectedSpeaker = document.querySelector('.speaker-item.active');
+  if (selectedSpeaker) {
+    if (selectedSpeaker.id === 'speaker-1') {
+      syncAudio(speaker1);
+    } else if (selectedSpeaker.id === 'speaker-2') {
+      syncAudio(speaker2);
+    } 
+  } else if (!iosDevice) {
+    // Play the audio of speaker 1 by default if the device is not iOS
+    speaker1 = audio1;
+    syncAudio(speaker1);
+    let default_speaker = document.getElementById('speaker-1');
+    default_speaker.classList.add('active');
+    console.log('default commentary playing.');
+    
+    // Change the dropdown toggle text to the selected speaker
+    dropdownToggleText.innerHTML = default_speaker.innerHTML + ' talking';
+  }
+  else {
+    console.log('iOS device detected. no default commentary playing.')
+  }
+
+  // Start syncing audio with video every 2 seconds
+  startSyncingAudio();
+}
+
+
 // Define options for the Video.js player
 const options = {
   language: "en",
@@ -16,16 +88,6 @@ let player = videojs('bar-rma-video', options);$
 let speaker1, speaker2;
 let audio1 = new Audio('https://squanch-bucket.s3.eu-west-1.amazonaws.com/audios/Fabi-1.m4a');
 let audio2 = new Audio('https://squanch-bucket.s3.eu-west-1.amazonaws.com/audios/Sven-2.m4a');
-
-// Function to sync audio with video
-function syncAudio(audio) {
-  if (player.paused()) {  
-    audio.pause();
-  } else {
-    audio.play();
-    audio.currentTime = player.currentTime();
-  }
-}
 
 // Get the dropdown toggle
 let dropdownToggleText = document.getElementById('dropdown-toggle-text');
@@ -64,6 +126,7 @@ menuItems.forEach(function(item) {
 
       // Add .active class to the selected menu item
       this.classList.add('active');
+      
       // Add .active class to the clicked menu item and sync with video
       if (this.id === 'speaker-1') {
         speaker1 = audio;
@@ -80,31 +143,26 @@ menuItems.forEach(function(item) {
 });
 
 // Event listener for video play, ...
-player.on('playing', function() {
-  console.log('the video is playing');
-  let selectedSpeaker = document.querySelector('.speaker-item.active');
-  if (selectedSpeaker) {
-    if (selectedSpeaker.id === 'speaker-1') {
-      syncAudio(speaker1);
-    } else if (selectedSpeaker.id === 'speaker-2') {
-      syncAudio(speaker2);
-    } 
-  } else {
-    // Play the audio of speaker 1 by default
-    speaker1 = audio1;
-    syncAudio(speaker1);
-    let default_speaker = document.getElementById('speaker-1');
-    default_speaker.classList.add('active');
-    console.log('default commentary playing.');
-    
-    // Change the dropdown toggle text to the selected speaker
-    dropdownToggleText.innerHTML = default_speaker.innerHTML + ' talking';
-  }
-});
+if (isIOS()){
+  console.log('iOS detected');
+  player.on('play', function() {
+    console.log('play button clicked');
+    startPlayingAudio(iosDevice=true);
+  });
+}
+else {
+  player.on('playing', function() {
+    console.log('the video is playing');
+    startPlayingAudio(iosDevice=false);
+  });
+}
 
 // ... pause and buffering.
 player.on(['pause', 'waiting'], function() {
   console.log('the video is paused/buffering.');
   if (speaker1) speaker1.pause();
   if (speaker2) speaker2.pause();
+
+  // Stop syncing audio with video
+  stopSyncingAudio();
 });
