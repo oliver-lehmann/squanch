@@ -10,6 +10,10 @@ function syncAudio(audio) {
   } else {
     if (audio.paused) {
       audio.play();
+      player.volume(0.8);
+      if (audio === speaker2) {
+        audio.volume = 0.8;
+      }
     }
     audio.currentTime = player.currentTime();
   }
@@ -25,6 +29,8 @@ function startSyncingAudio() {
         active_speaker = speaker1;
       } else if (selectedSpeaker.id === 'speaker-2') {
         active_speaker = speaker2;
+      } else if (selectedSpeaker.id === 'speaker-3') {
+        active_speaker = speaker3;
       }
 
       const audio_video_diff_threshold = 0.5;
@@ -49,6 +55,8 @@ function startPlayingAudio(iosDevice) {
       syncAudio(speaker1);
     } else if (selectedSpeaker.id === 'speaker-2') {
       syncAudio(speaker2);
+    } else if (selectedSpeaker.id === 'speaker-3') {
+      syncAudio(speaker3);
     } 
   } else if (!iosDevice) {
     // Play the audio of speaker 1 by default if the device is not iOS
@@ -85,9 +93,10 @@ const options = {
 let player = videojs('bar-rma-video', options);$
 
 // Declare the speaker variables as undefined. We will assign them later
-let speaker1, speaker2;
+let speaker1, speaker2, speaker3;
 let audio1 = new Audio('https://squanch-bucket.s3.eu-west-1.amazonaws.com/audios/Fabi-1.m4a');
 let audio2 = new Audio('https://squanch-bucket.s3.eu-west-1.amazonaws.com/audios/Sven-2.m4a');
+let audio3 = new Audio('https://squanch-bucket.s3.eu-west-1.amazonaws.com/audios/audio-eden.wav');
 
 // Get the dropdown toggle
 let dropdownToggleText = document.getElementById('dropdown-toggle-text');
@@ -103,6 +112,8 @@ menuItems.forEach(function(item) {
       audio = audio1;
     } else if (this.id === 'speaker-2') {
       audio = audio2;
+    } else if (this.id === 'speaker-3') {
+      audio = audio3;
     }
 
     // Check if the clicked menu item is already active
@@ -121,6 +132,8 @@ menuItems.forEach(function(item) {
           speaker1.pause();
         } else if (otherItem.id === 'speaker-2' && speaker2) {
           speaker2.pause();
+        } else if (otherItem.id === 'speaker-3' && speaker3) {
+          speaker3.pause();
         }
       });
 
@@ -134,6 +147,9 @@ menuItems.forEach(function(item) {
       } else if (this.id === 'speaker-2') {
         speaker2 = audio;
         syncAudio(speaker2);
+      } else if (this.id === 'speaker-3') {
+        speaker3 = audio;
+        syncAudio(speaker3);
       }
 
       // Change the dropdown toggle text to the selected speaker
@@ -162,6 +178,7 @@ player.on(['pause', 'waiting'], function() {
   console.log('the video is paused/buffering.');
   if (speaker1) speaker1.pause();
   if (speaker2) speaker2.pause();
+  if (speaker3) speaker3.pause();
 
   // Stop syncing audio with video
   stopSyncingAudio();
